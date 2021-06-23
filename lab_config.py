@@ -1,0 +1,1 @@
+boto_args = {'service_name': 'dynamodb'}

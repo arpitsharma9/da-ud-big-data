@@ -1,0 +1,351 @@
+# Download sample data for demo
+
+wget https://video.udacity-data.com/topher/2020/October/5f8df2a1_sample-data/sample-data.zip
+wget https://video.udacity-data.com/topher/2020/October/5f8db306_sample-data-l2-e1/sample-data-l2-e1.csv
+
+## rename the file
+mv sample-data-l2-e1.csv sample-data-l2-e2.csv 
+
+
+# unzip the file 
+unzip sample-data.zip
+sample_data/Feb/fhv_tripdata_2020-February.csv  
+sample_data/Jan/fhv_tripdata_2020-January.csv  
+fhv_tripdata_2020-January.csv
+
+# list and check file size
+ls -llh
+
+# Recursive listing of directory to see files in directory
+ls -R
+
+# List files on Hadoop File System ('/ indicates root')
+hdfs dfs -ls /
+
+# Create Directory on Hadoop
+hdfs dfs -mkdir /user/sample_data/
+
+# Verify the directory was created using ls command
+hdfs dfs -ls /user/
+
+
+# PUT data on HDFS
+hdfs dfs -put sample_data/Jan/fhv_tripdata_2020-January.csv  /user/sample_data/
+hdfs dfs -put sample_data/Feb/fhv_tripdata_2020-February.csv   /user/sample_data/
+
+ 
+
+# verify the file was loaded using ls command on HDFS
+hdfs dfs -ls /user/sample_data/
+
+# remove local file (optional)
+ rm -rf *
+rm sample-data-l2-e2.csv
+rm -R sample-data.zip
+rm -R sample_data
+
+# Cat command to see contents of the file
+hdfs dfs -cat /user/sample_data/fhv_tripdata_2020-February.csv | head -10
+hdfs dfs -cat /user/sample_data/fhv_tripdata_2020-January.csv | tail -10
+
+## text commmand to get contents of the file
+hdfs dfs -text /user/sample_data/fhv_tripdata_2020-February.csv | head -10
+hdfs dfs -text /user/sample_data/fhv_tripdata_2020-January.csv | tail -10
+
+## test command to check whether the file exists 
+
+hdfs dfs -test -z  /user/sample_data/
+hdfs dfs -test -z /user/sample_data/fhv_tripdata_2020-January.csv 
+
+# You can download the data back from HDFS to local (linux) system
+
+hdfs dfs -get /user/sample_data/
+hdfs dfs -get /user/sample_data/fhv_tripdata_2020-January.csv
+hdfs dfs -get /user/sample_data/fhv_tripdata_2020-February.csv
+
+## lets use the HDFS count command 
+
+hdfs dfs -count /user/
+hdfs dfs -count /user/sample_data/
+
+
+## merge command 
+hdfs dfs -getmerge /user/sample_data/ mergedData/
+
+# remove local file (again)
+
+hdfs dfs -rm -r /user/sample_data
+
+
+
+
+sudo yum install java-1.8.0
+
+java -version
+
+
+# Download Kafka Client
+wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
+
+# Unzip
+tar -xzf kafka_2.12-2.2.1.tgz
+
+# Describe Cluster
+aws kafka describe-cluster --region us-east-1 --cluster-arn arn:aws:kafka:us-east-1:747398377677:cluster/demo-cluster-1/612595bd-3cc9-49c4-9d28-475bf0c91332-5
+
+
+# Create Topic
+bin/kafka-topics.sh --create --zookeeper z-1.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2182,z-3.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2182,z-2.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2182 --replication-factor 2 --partitions 1 --topic KafkaDemoTopic
+
+
+bin/kafka-topics.sh --create --zookeeper  z-1.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2181,z-3.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2181,z-2.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:2181 --replication-factor 2 --partitions 1 --topic KafkaDemoTopic
+
+bin/kafka-topics.sh --create --zookeeper  b-2.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9094,b-1.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9094 --replication-factor 2 --partitions 1 --topic KafkaDemoTopic
+
+bin/kafka-topics.sh --create --zookeeper  zookeeper:2181 --replication-factor 2 --partitions 1 --topic KafkaDemoTopic
+
+
+OTE: You can use non TLS servers for this as well. To see how to configure TLS follow the instructions here: https://docs.aws.amazon.com/msk/latest/developerguide/produce-consume.html
+
+# Produce messages
+./kafka-console-producer.sh --broker-list b-1.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9092,b-2.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9092 --producer.config ../config/producer.properties --topic KafkaDemoTopic
+
+
+# Consume messages
+./kafka-console-consumer.sh --bootstrap-server b-1.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9092,b-2.demo-cluster-1.yu7493.c5.kafka.us-east-1.amazonaws.com:9092 --consumer.config ../config/consumer.properties --topic KafkaDemoTopic --from-beginning
+
+# 
+
+
+## Hive exercise
+
+
+
+hdfs dfs -mkdir /user/crash/
+
+hdfs dfs -put  sample-data-l2-e1.csv  /user/crash/
+
+hdfs dfs -ls /user/crash/
+
+
+
+
+# Download sample data for demo
+
+wget https://video.udacity-data.com/topher/2020/October/5f8db306_sample-data-l2-e1/sample-data-l2-e1.csv
+
+# Hive commands. You can get into hive shell by typing "hive" on EMR console
+CREATE DATABASE IF NOT EXISTS NY_COLLISION;
+
+set hive.cli.print.header=true;
+
+CREATE TABLE IF NOT EXISTS NY_COLLISION.CRASH(
+    COLLISION_ID string,
+    ACCIDENT_DATE string,
+    ACCIDENT_TIME string,
+    BOROUGH string,
+    ZIPCODE integer,
+    LATITUDE double,
+    LONGITUDE double,
+    LATLONG string,
+    ON_STREET_NAME string,
+    CROSS_STREET_NAME string,
+    OFF_STREET_NAME string,
+    NUMBER_OF_PERSONS_INJURED string,
+    NUMBER_OF_PERSONS_KILLED string,
+    NUMBER_OF_PEDESTRIANS_INJURED string,
+    NUMBER_OF_PEDESTRIANS_KILLED string,
+    NUMBER_OF_CYCLIST_INJURED string,
+    NUMBER_OF_CYCLIST_KILLED string,
+    NUMBER_OF_MOTORIST_INJURED string,
+    NUMBER_OF_MOTORIST_KILLED string,
+    CONTRIBUTING_FACTOR_VEHICLE_1 string,
+    CONTRIBUTING_FACTOR_VEHICLE_2 string,
+    CONTRIBUTING_FACTOR_VEHICLE_3 string,
+    CONTRIBUTING_FACTOR_VEHICLE_4 string,
+    CONTRIBUTING_FACTOR_VEHICLE_5 string,
+    VEHICLE_TYPE_CODE_1 string,
+    VEHICLE_TYPE_CODE_2 string,
+    VEHICLE_TYPE_CODE_3 string,
+    VEHICLE_TYPE_CODE_4 string,
+    VEHICLE_TYPE_CODE_5 string)
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY ','
+    LOCATION '/user/crash';
+
+CREATE TABLE IF NOT EXISTS NY_COLLISION.CRASH(
+    COLLISION_ID string,
+    ACCIDENT_DATE string,
+    ACCIDENT_TIME string,
+    BOROUGH string,
+    ZIPCODE integer,
+    LATITUDE double,
+    LONGITUDE double,
+    LATLONG string,
+    ON_STREET_NAME string,
+    CROSS_STREET_NAME string,
+    OFF_STREET_NAME string,
+    NUMBER_OF_PERSONS_INJURED string,
+    NUMBER_OF_PERSONS_KILLED string,
+    NUMBER_OF_PEDESTRIANS_INJURED string,
+    NUMBER_OF_PEDESTRIANS_KILLED string,
+    NUMBER_OF_CYCLIST_INJURED string,
+    NUMBER_OF_CYCLIST_KILLED string,
+    NUMBER_OF_MOTORIST_INJURED string,
+    NUMBER_OF_MOTORIST_KILLED string,
+    CONTRIBUTING_FACTOR_VEHICLE_1 string,
+    CONTRIBUTING_FACTOR_VEHICLE_2 string,
+    CONTRIBUTING_FACTOR_VEHICLE_3 string,
+    CONTRIBUTING_FACTOR_VEHICLE_4 string,
+    CONTRIBUTING_FACTOR_VEHICLE_5 string,
+    VEHICLE_TYPE_CODE_1 string,
+    VEHICLE_TYPE_CODE_2 string,
+    VEHICLE_TYPE_CODE_3 string,
+    VEHICLE_TYPE_CODE_4 string,
+    VEHICLE_TYPE_CODE_5 string)
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY ','
+    LOCATION '/user/crash';
+
+show DATABASE;
+use NY_COLLISION;
+show tables;
+describe formatted crash;
+
+
+
+
+# hdfs commands, to be executed outside of hive shell
+hdfs dfs -ls /user/crash
+
+Select * from Crash limit 10;
+
+hdfs -dfs -rm /user/crash/sample-data-l2-e1.csv
+
+LOAD DATA LOCAL INPATH 'sample-data-l2-e1.csv' OVERWRITE INTO TABLE NY_COLLISION.CRASH;
+
+set hive.cli.print.header=true;
+
+
+SELECT ZIPCODE, COUNT(*) AS num_of_accidents from crash GROUP BY ZIPCODE ORDER BY num_of_accidents DESC;
+
+# Get information about the Hive table
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS NY_COLLISION.CRASH_EXT(
+    COLLISION_ID string,
+    ACCIDENT_DATE string,
+    ACCIDENT_TIME string,
+    BOROUGH string,
+    ZIPCODE integer,
+    LATITUDE double,
+    LONGITUDE double,
+    LATLONG string,
+    ON_STREET_NAME string,
+    CROSS_STREET_NAME string,
+    OFF_STREET_NAME string,
+    NUMBER_OF_PERSONS_INJURED string,
+    NUMBER_OF_PERSONS_KILLED string,
+    NUMBER_OF_PEDESTRIANS_INJURED string,
+    NUMBER_OF_PEDESTRIANS_KILLED string,
+    NUMBER_OF_CYCLIST_INJURED string,
+    NUMBER_OF_CYCLIST_KILLED string,
+    NUMBER_OF_MOTORIST_INJURED string,
+    NUMBER_OF_MOTORIST_KILLED string,
+    CONTRIBUTING_FACTOR_VEHICLE_1 string,
+    CONTRIBUTING_FACTOR_VEHICLE_2 string,
+    CONTRIBUTING_FACTOR_VEHICLE_3 string,
+    CONTRIBUTING_FACTOR_VEHICLE_4 string,
+    CONTRIBUTING_FACTOR_VEHICLE_5 string,
+    VEHICLE_TYPE_CODE_1 string,
+    VEHICLE_TYPE_CODE_2 string,
+    VEHICLE_TYPE_CODE_3 string,
+    VEHICLE_TYPE_CODE_4 string,
+    VEHICLE_TYPE_CODE_5 string)
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY ','
+    LOCATION '/user/crash_ext';
+
+    describe formatted crash_ext;
+
+
+LOAD DATA LOCAL INPATH 'sample-data-l2-e1.csv' OVERWRITE INTO TABLE NY_COLLISION.CRASH_EXT;
+
+
+REATE EXTERNAL TABLE IF NOT EXISTS NY_COLLISION.CRASH_Partitioned(
+    COLLISION_ID string,
+    ACCIDENT_DATE string,
+    ACCIDENT_TIME string,
+    ZIPCODE integer,
+    LATITUDE double,
+    LONGITUDE double,
+    LATLONG string,
+    ON_STREET_NAME string,
+    CROSS_STREET_NAME string,
+    OFF_STREET_NAME string,
+    NUMBER_OF_PERSONS_INJURED string,
+    NUMBER_OF_PERSONS_KILLED string,
+    NUMBER_OF_PEDESTRIANS_INJURED string,
+    NUMBER_OF_PEDESTRIANS_KILLED string,
+    NUMBER_OF_CYCLIST_INJURED string,
+    NUMBER_OF_CYCLIST_KILLED string,
+    NUMBER_OF_MOTORIST_INJURED string,
+    NUMBER_OF_MOTORIST_KILLED string,
+    CONTRIBUTING_FACTOR_VEHICLE_1 string,
+    CONTRIBUTING_FACTOR_VEHICLE_2 string,
+    CONTRIBUTING_FACTOR_VEHICLE_3 string,
+    CONTRIBUTING_FACTOR_VEHICLE_4 string,
+    CONTRIBUTING_FACTOR_VEHICLE_5 string,
+    VEHICLE_TYPE_CODE_1 string,
+    VEHICLE_TYPE_CODE_2 string,
+    VEHICLE_TYPE_CODE_3 string,
+    VEHICLE_TYPE_CODE_4 string,
+    VEHICLE_TYPE_CODE_5 string)
+    PARTITIONED BY (BOROUGH string)
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY ','
+    LOCATION '/user/crash_partitioned';
+
+
+
+# Load data in hive table - static partitioning example
+LOAD DATA LOCAL INPATH 'static_partition/bronx.csv' INTO TABLE NY_COLLISION.CRASH_Partitioned PARTITION(BOROUGH='BRONX');
+LOAD DATA LOCAL INPATH 'static_partition/brooklyn.csv' INTO TABLE NY_COLLISION.CRASH_Partitioned PARTITION(BOROUGH='BROOKLYN');
+LOAD DATA LOCAL INPATH 'static_partition/manhattan.csv' INTO TABLE NY_COLLISION.CRASH_Partitioned PARTITION(BOROUGH='MANHATTAN');
+LOAD DATA LOCAL INPATH 'static_partition/queens.csv' INTO TABLE NY_COLLISION.CRASH_Partitioned PARTITION(BOROUGH='QUEENS');
+LOAD DATA LOCAL INPATH 'static_partition/staten_island.csv' INTO TABLE NY_COLLISION.CRASH_Partitioned PARTITION(BOROUGH='STATEN ISLAND');
+
+
+--Dynamic partition strict mode requires at least one static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstric
+
+set hive.exec.dynamic.partition.mode=nonstric;
+
+INSERT OVERWRITE TABLE NY_COLLISION.CRASH_Partitioned PARTITION (BOROUGH)
+SELECT COLLISION_ID,
+    ACCIDENT_DATE,
+    ACCIDENT_TIME,
+    ZIPCODE,
+    LATITUDE,
+    LONGITUDE,
+    LATLONG,
+    ON_STREET_NAME,
+    CROSS_STREET_NAME,
+    OFF_STREET_NAME,
+    NUMBER_OF_PERSONS_INJURED,
+    NUMBER_OF_PERSONS_KILLED,
+    NUMBER_OF_PEDESTRIANS_INJURED,
+    NUMBER_OF_PEDESTRIANS_KILLED,
+    NUMBER_OF_CYCLIST_INJURED,
+    NUMBER_OF_CYCLIST_KILLED,
+    NUMBER_OF_MOTORIST_INJURED,
+    NUMBER_OF_MOTORIST_KILLED,
+    CONTRIBUTING_FACTOR_VEHICLE_1,
+    CONTRIBUTING_FACTOR_VEHICLE_2,
+    CONTRIBUTING_FACTOR_VEHICLE_3,
+    CONTRIBUTING_FACTOR_VEHICLE_4,
+    CONTRIBUTING_FACTOR_VEHICLE_5,
+    VEHICLE_TYPE_CODE_1,
+    VEHICLE_TYPE_CODE_2,
+    VEHICLE_TYPE_CODE_3,
+    VEHICLE_TYPE_CODE_4,
+    VEHICLE_TYPE_CODE_5, BOROUGH FROM NY_COLLISION.crash_ext WHERE BOROUGH != 'null' AND BOROUGH != '0';
