@@ -249,3 +249,5 @@ hdfs dfs -rm -r /user/
 
 
 hdfs dfs -ls /user/game_review/
+
+
